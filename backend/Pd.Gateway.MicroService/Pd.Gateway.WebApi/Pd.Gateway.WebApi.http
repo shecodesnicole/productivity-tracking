@@ -1,0 +1,6 @@
+@Pd.Gateway.WebApi_HostAddress = http://localhost:5157
+
+GET {{Pd.Gateway.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
