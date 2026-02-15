@@ -1,3 +1,5 @@
 <Solution>
+  <Project Path="Pd.Gateway.Application/Pd.Gateway.Application.csproj" Id="3bd0f937-145c-4082-8cbb-6fcd52d42fff" />
+  <Project Path="Pd.Gateway.Persistence/Pd.Gateway.Persistence.csproj" Id="8c8ace5b-aaaa-4740-a937-392e9db4f636" />
   <Project Path="Pd.Gateway.WebApi/Pd.Gateway.WebApi.csproj" />
 </Solution>

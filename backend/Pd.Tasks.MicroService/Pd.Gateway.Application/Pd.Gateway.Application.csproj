@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Domain\Extensions\" />
+    <Folder Include="Domain\Models\" />
+    <Folder Include="Domain\Persistence\" />
+    <Folder Include="Domain\Settings\" />
+    <Folder Include="Domain\Services\" />
+    <Folder Include="Domain\Requests\" />
+    <Folder Include="Features\" />
+  </ItemGroup>
+
+</Project>

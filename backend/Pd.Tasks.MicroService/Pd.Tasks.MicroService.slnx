@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Pd.Gateway.Application/Pd.Gateway.Application.csproj" />
+  <Project Path="Pd.Gateway.Persistence/Pd.Gateway.Persistence.csproj" />
+  <Project Path="Pd.Tasks.WebApi/Pd.Tasks.WebApi.csproj" />
+</Solution>
