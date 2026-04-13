@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using System.Threading.Tasks;
+using Pd.Tasks.Application.Features.TaskManagement.Models;
 
 namespace Pd.Tasks.Application.Domain.Requests
 {
@@ -15,6 +16,16 @@ namespace Pd.Tasks.Application.Domain.Requests
         public string ErrorMessage { get; set; }
 
         public TData Data { get; set; }
+
+        internal static RequestResult<TaskModel> Failure(string v1, int v2)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static RequestResult<TaskModel> Success(TaskModel task)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 
