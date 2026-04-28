@@ -24,10 +24,17 @@ namespace Pd.Tasks.WebApi.Controllers
         [HttpPost("AddTask")]
         public async Task<IActionResult> AddTask([FromBody] AddTaskCommand command, CancellationToken cancellationToken)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
             try
             {
                 var result = await taskManagementService.AddTaskAsync(command, cancellationToken);
+
+                await unitOfWork.SaveChangesAsync();
+
                 return FromRequestResult(result);
 
             }
@@ -44,6 +51,7 @@ namespace Pd.Tasks.WebApi.Controllers
             try
             {
                 var result = await taskManagementService.GetAllTasksAsync(cancellationToken);
+
                 return FromRequestResult(result);
 
             }catch (Exception e)
@@ -78,7 +86,7 @@ namespace Pd.Tasks.WebApi.Controllers
                 return FromRequestResult(result);
             }
             catch (Exception e)
-            {
+            { 
                 return ToFailureRequest<TaskModel>($"{e.Message}", 500);
             }
         }

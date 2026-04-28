@@ -6,5 +6,6 @@ namespace Pd.Tasks.Application.Domain.Persistence
 {
     public interface IUnitOfWork
     {
+        Task<int> SaveChangesAsync();
     }
 }

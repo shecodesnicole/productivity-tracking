@@ -47,7 +47,7 @@ namespace Pd.Tasks.Application.Features.TaskManagement.Services //functions to c
             {
                 IsSuccessful = true,
                 StatusCode = 200,
-                Data = result
+                Data = taskInfo
             };
         }
         public async Task<RequestResult<TaskModel>> GetTaskAsync(GetTaskCommand command, CancellationToken cancellationToken)

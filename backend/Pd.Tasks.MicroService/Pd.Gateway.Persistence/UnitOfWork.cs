@@ -18,7 +18,7 @@ namespace Pd.Tasks.Persistence
 
         public async Task<int> SaveChangesAsync()
         {
-            //_context.ChangeTracker.DetectChanges();
+        
             return await _context.SaveChangesAsync();
         }
     }
