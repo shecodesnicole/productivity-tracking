@@ -1,14 +1,14 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Pd.Tasks.Application.Domain.Persistence;
 using Pd.Tasks.Application.Features.TaskManagement.Models;
 using Pd.Tasks.Application.Features.TaskManagement.Requests;
 using Pd.Tasks.Application.Features.TaskManagement.Services;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace Pd.Tasks.WebApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Authorize]
+    [Route("api/tasks/[controller]")]
     [ApiController]
     public class TaskController : BaseController
     {
@@ -21,22 +21,45 @@ namespace Pd.Tasks.WebApi.Controllers
             this.unitOfWork = unitOfWork;
         }
 
-        [HttpPost("AddTask")]
+        [HttpGet]
+        public async Task<IActionResult> GetAllTasks(CancellationToken cancellationToken)
+        {
+            try
+            {
+                var result = await taskManagementService.GetAllTasksAsync(cancellationToken);
+                return FromRequestResult(result);
+            }
+            catch (Exception e)
+            {
+                return ToFailureRequest<TaskModel>($"{e}", 500);
+            }
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetTask(int id, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var result = await taskManagementService.GetTaskAsync(new GetTaskCommand { Id = id }, cancellationToken);
+                return FromRequestResult(result);
+            }
+            catch (Exception e)
+            {
+                return ToFailureRequest<TaskModel>($"{e.Message}", 500);
+            }
+        }
+
+        [HttpPost]
         public async Task<IActionResult> AddTask([FromBody] AddTaskCommand command, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
             try
             {
                 var result = await taskManagementService.AddTaskAsync(command, cancellationToken);
-
                 await unitOfWork.SaveChangesAsync();
-
                 return FromRequestResult(result);
-
             }
             catch (Exception e)
             {
@@ -44,66 +67,29 @@ namespace Pd.Tasks.WebApi.Controllers
             }
         }
 
-        [HttpPost("GetAllTasks")]
-        public async Task<IActionResult> GetAllTasks([FromBody] CancellationToken cancellationToken)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateTask(int id, [FromBody] UpdateTaskCommand command, CancellationToken cancellationToken)
         {
-
-            try
-            {
-                var result = await taskManagementService.GetAllTasksAsync(cancellationToken);
-
-                return FromRequestResult(result);
-
-            }catch (Exception e)
-            {
-                return ToFailureRequest<TaskModel>($"{e}", 500);
-            }
-        }
-
-        [HttpPost("GetTask")]
-        public async Task<IActionResult> GetTaskById(GetTaskCommand command, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var result = await taskManagementService.GetTaskAsync(command, cancellationToken);
-
-                return FromRequestResult(result);
-            }
-            catch (Exception e)
-            {
-                return ToFailureRequest<TaskModel>($"{e.Message}", 500);
-            }
-        }
-
-
-        [HttpPost("UpdateTask")]
-        public async Task<IActionResult> UpdateTask([FromBody] UpdateTaskCommand command, CancellationToken cancellationToken)
-        {
+            command.Id = id;
             try
             {
                 var result = await taskManagementService.UpdateTaskAsync(command, cancellationToken);
-
                 return FromRequestResult(result);
             }
             catch (Exception e)
-            { 
+            {
                 return ToFailureRequest<TaskModel>($"{e.Message}", 500);
             }
         }
 
-        [HttpPost("DeleteTask")]
-        public async Task<IActionResult> DeleteTask(DeleteTaskCommand command, CancellationToken cancellationToken)
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteTask(int id, CancellationToken cancellationToken)
         {
-            var result = await taskManagementService.DeleteTaskAsync(command.Id, cancellationToken);
+            var result = await taskManagementService.DeleteTaskAsync(id, cancellationToken);
             if (!result.IsSuccessful)
                 return NotFound(result.ErrorMessage);
-
-
-
             return NoContent();
-
         }
-
-
     }
 }

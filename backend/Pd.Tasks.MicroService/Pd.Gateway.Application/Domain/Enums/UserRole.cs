@@ -7,7 +7,7 @@ namespace Pd.Tasks.Application.Domain.Enums
     public enum UserRole
     {
         Admin,
-        BasicUser,
-        Compliance
+        Member,
+        Viewer
     }
 }
