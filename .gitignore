@@ -403,3 +403,17 @@ FodyWeavers.xsd
 # Additional files built by Visual Studio
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudio
+
+# ASP.NET Core environment-specific config (may contain secrets)
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.json
+!appsettings.json
+
+# .NET user secrets
+secrets.json
+
+# Environment files
+.env
+.env.*
+!.env.example
