@@ -26,7 +26,15 @@ namespace Pd.Tasks.Application.Features.TaskManagement.Services //functions to c
 
         public async Task<RequestResult<TaskModel>> AddTaskAsync(AddTaskCommand taskCommand, CancellationToken cancellationToken)
         {
-            
+            // Convert DueDate to UTC if provided, to fix PostgreSQL timestamp with time zone issue
+            DateTime? dueDateUtc = null;
+            if (taskCommand.DueDate.HasValue)
+            {
+                dueDateUtc = taskCommand.DueDate.Value.Kind == DateTimeKind.Unspecified
+                    ? DateTime.SpecifyKind(taskCommand.DueDate.Value, DateTimeKind.Utc)
+                    : taskCommand.DueDate.Value;
+            }
+
             var taskInfo  = new TaskModel
             {
                 Title = taskCommand.Title,
@@ -34,11 +42,9 @@ namespace Pd.Tasks.Application.Features.TaskManagement.Services //functions to c
                 Status = taskCommand.Status,
                 HoursWorked = taskCommand.HoursWorked,
                 CreatedAt = DateTime.UtcNow,
-                DueDate = taskCommand.DueDate,
+                DueDate = dueDateUtc,
                 IsActive = true,
                 CompletedAt = null // initially not completed
-
-
             };
 
             var result = await _taskRepository.AddTaskAsync(taskInfo);
@@ -75,10 +81,9 @@ namespace Pd.Tasks.Application.Features.TaskManagement.Services //functions to c
 
         public async Task<RequestResult<TaskModel>> UpdateTaskAsync(UpdateTaskCommand command, CancellationToken cancellationToken)
         {
-            var task = await _taskRepository.GetTaskAsync( u => u.Id == command.Id);
+            var task = await _taskRepository.GetTaskAsync(u => u.Id == command.Id);
 
             if (task == null)
-            {
                 return new RequestResult<TaskModel>
                 {
                     IsSuccessful = false,
@@ -86,10 +91,19 @@ namespace Pd.Tasks.Application.Features.TaskManagement.Services //functions to c
                     ErrorMessage = "Task not found",
                     Data = null
                 };
+
+            if (command.Title != null) task.Title = command.Title;
+            if (command.Description != null) task.Description = command.Description;
+            if (command.Status.HasValue) task.Status = command.Status.Value;
+            if (command.DueDate.HasValue)
+            {
+                // Convert DueDate to UTC if unspecified, to fix PostgreSQL timestamp with time zone issue
+                task.DueDate = command.DueDate.Value.Kind == DateTimeKind.Unspecified
+                    ? DateTime.SpecifyKind(command.DueDate.Value, DateTimeKind.Utc)
+                    : command.DueDate.Value;
             }
 
-
-            await _taskRepository.UpdateTaskAsync(task, command);
+            await _taskRepository.SaveAsync();
 
             return new RequestResult<TaskModel>
             {
@@ -97,7 +111,6 @@ namespace Pd.Tasks.Application.Features.TaskManagement.Services //functions to c
                 StatusCode = 200,
                 Data = task
             };
-
         }
 
         public async Task<RequestResult<object>> DeleteTaskAsync(int id, CancellationToken cancellationToken)

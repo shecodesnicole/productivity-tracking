@@ -21,7 +21,7 @@ namespace Pd.Tasks.Application.Features.TaskManagement.Models
             public string Title { get; set; }
 
             [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters.")]
-            public string Description { get; set; }
+            public string? Description { get; set; }
 
             [Required(ErrorMessage = "Status is required.")]
             public ProdashTaskStatus Status { get; set; }

@@ -1,29 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Pd.Tasks.Application.Features.TaskManagement.Models;
-
+using Pd.Tasks.Application.Features.UsersManagement.Models;
 
 namespace Pd.Tasks.Persistence
 {
     public class LocalDbContext : DbContext
     {
-        // Replace parameterless ctor with DI-based ctor
         public LocalDbContext(DbContextOptions<LocalDbContext> options)
             : base(options)
         {
         }
-        
-    
 
         public DbSet<TaskModel> Tasks { get; set; }
+        public DbSet<UserModel> User { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<UserModel>().HasKey(u => u.Id);
+
             modelBuilder.Entity<TaskModel>().HasKey(s => s.Id);
 
             modelBuilder.Entity<TaskModel>().HasData(
