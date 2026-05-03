@@ -113,9 +113,9 @@ namespace Pd.Tasks.Application.Features.TaskManagement.Services //functions to c
             };
         }
 
-        public async Task<RequestResult<object>> DeleteTaskAsync(int id, CancellationToken cancellationToken)
+        public async Task<RequestResult<object>> DeleteTaskAsync(DeleteTaskCommand command, CancellationToken cancellationToken)
         {
-            var deleted = await _taskRepository.DeleteTaskAsync(id, cancellationToken);
+            var deleted = await _taskRepository.DeleteTaskAsync(command.Id, cancellationToken);
 
             if (!deleted)
             {
@@ -123,7 +123,7 @@ namespace Pd.Tasks.Application.Features.TaskManagement.Services //functions to c
                 {
                     IsSuccessful = false,
                     StatusCode = 404,
-                    ErrorMessage = $"Task with ID {id} not found."
+                    ErrorMessage = $"Task with ID {command.Id} not found."
                 };
             }
 

@@ -1,6 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Pd.Tasks.Application.Domain.Enums;
 using Pd.Tasks.Application.Features.TaskManagement.Models;
 using Pd.Tasks.Application.Features.UsersManagement.Models;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Pd.Tasks.Persistence
 {
@@ -20,6 +23,19 @@ namespace Pd.Tasks.Persistence
             modelBuilder.Entity<UserModel>().HasKey(u => u.Id);
 
             modelBuilder.Entity<TaskModel>().HasKey(s => s.Id);
+
+            modelBuilder.Entity<UserModel>().HasData(
+                new UserModel
+                {
+                    Id = "user-seed-1",
+                    Email = "test@prodash.com",
+                    Password = HashPasswordForSeed("TestPassword123!"),
+                    UserRole = UserRole.Admin,
+                    IsActive = true,
+                    PasswordResetToken = null,
+                    PasswordResetTokenExpiry = null
+                }
+            );
 
             modelBuilder.Entity<TaskModel>().HasData(
 
@@ -140,26 +156,20 @@ namespace Pd.Tasks.Persistence
         }
         
 
-        // Add this helper method to LocalDbContext
-        private static string GeneratePbkdf2Hash(string password)
+        // Helper method for deterministic password hashing during seeding
+        private static string HashPasswordForSeed(string password)
         {
-            byte[] salt;
-            using (var rng = new System.Security.Cryptography.RNGCryptoServiceProvider())
-            {
-                rng.GetBytes(salt = new byte[16]);
-            }
+            // Use fixed salt for deterministic hashing in seed data
+            byte[] salt = Encoding.ASCII.GetBytes("prodashdevsalt12"); // Must be 16 bytes
             
-            var pbkdf2 = new System.Security.Cryptography.Rfc2898DeriveBytes(password, salt, 10000);
+            var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 10000);
             byte[] hash = pbkdf2.GetBytes(20);
+            
             byte[] hashBytes = new byte[36];
             Array.Copy(salt, 0, hashBytes, 0, 16);
             Array.Copy(hash, 0, hashBytes, 16, 20);
+            
             return Convert.ToBase64String(hashBytes);
         }
-
-        // Add this method to your LocalDbContext class, after the existing SeedData method
-
-
-       
     }
 }

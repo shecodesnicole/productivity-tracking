@@ -45,17 +45,30 @@ namespace Pd.Tasks.Application.Features.IAM.Services
 
         public async Task<RequestResult<AuthenticationTokenModel>> LoginAsync(LoginCommand request)
         {
+            _logger.LogInformation("[AuthService] LoginAsync started for {Email}", request.Email);
+            
             var dbUser = await userRepository.GetUserAsync(s => s.Email == request.Email);
 
             if (dbUser == null)
+            {
+                _logger.LogWarning("[AuthService] No user found for {Email}", request.Email);
                 return RequestResult.BadRequest<AuthenticationTokenModel>("No account found with this email address. Please register first.");
+            }
+
+            _logger.LogInformation("[AuthService] User found: {Email}, IsActive: {IsActive}", dbUser.Email, dbUser.IsActive);
 
             if (!dbUser.IsActive)
                 return RequestResult.BadRequest<AuthenticationTokenModel>("Your account has been deactivated. Please contact support for assistance.");
 
+            _logger.LogInformation("[AuthService] Verifying password for {Email}. Stored hash length: {HashLength}", dbUser.Email, dbUser.Password?.Length ?? 0);
+            
             if (!HashingService.IsHashOf(dbUser.Password, request.Password))
+            {
+                _logger.LogWarning("[AuthService] Password verification failed for {Email}", request.Email);
                 return RequestResult.BadRequest<AuthenticationTokenModel>("Incorrect password. Please try again or reset your password.");
+            }
 
+            _logger.LogInformation("[AuthService] Password verified. Generating token for {Email}", request.Email);
             var result = await AuthToken(dbUser);
             await authenticationTokensRepository.AddAuthenticationTokenAsync(result);
             return RequestResult.Success(result);

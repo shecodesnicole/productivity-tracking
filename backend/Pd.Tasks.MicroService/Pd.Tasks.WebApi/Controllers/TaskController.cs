@@ -21,7 +21,7 @@ namespace Pd.Tasks.WebApi.Controllers
             this.unitOfWork = unitOfWork;
         }
 
-        [HttpGet]
+        [HttpPost("GetAllTasks")]
         public async Task<IActionResult> GetAllTasks(CancellationToken cancellationToken)
         {
             try
@@ -35,12 +35,12 @@ namespace Pd.Tasks.WebApi.Controllers
             }
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetTask(int id, CancellationToken cancellationToken)
+        [HttpPost("GetTask")]
+        public async Task<IActionResult> GetTask([FromBody] GetTaskCommand command, CancellationToken cancellationToken)
         {
             try
             {
-                var result = await taskManagementService.GetTaskAsync(new GetTaskCommand { Id = id }, cancellationToken);
+                var result = await taskManagementService.GetTaskAsync(command, cancellationToken);
                 return FromRequestResult(result);
             }
             catch (Exception e)
@@ -49,7 +49,7 @@ namespace Pd.Tasks.WebApi.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost("AddTask")]
         public async Task<IActionResult> AddTask([FromBody] AddTaskCommand command, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
@@ -67,10 +67,9 @@ namespace Pd.Tasks.WebApi.Controllers
             }
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTask(int id, [FromBody] UpdateTaskCommand command, CancellationToken cancellationToken)
+        [HttpPut("UpdateTask")]
+        public async Task<IActionResult> UpdateTask([FromBody] UpdateTaskCommand command, CancellationToken cancellationToken)
         {
-            command.Id = id;
             try
             {
                 var result = await taskManagementService.UpdateTaskAsync(command, cancellationToken);
@@ -83,10 +82,10 @@ namespace Pd.Tasks.WebApi.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTask(int id, CancellationToken cancellationToken)
+        [HttpDelete("DeleteTask")]
+        public async Task<IActionResult> DeleteTask([FromBody] DeleteTaskCommand command, CancellationToken cancellationToken)
         {
-            var result = await taskManagementService.DeleteTaskAsync(id, cancellationToken);
+            var result = await taskManagementService.DeleteTaskAsync(command, cancellationToken);
             if (!result.IsSuccessful)
                 return NotFound(result.ErrorMessage);
             return NoContent();
