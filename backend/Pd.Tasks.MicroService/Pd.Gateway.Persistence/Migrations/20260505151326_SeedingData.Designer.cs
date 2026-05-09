@@ -12,8 +12,8 @@ using Pd.Tasks.Persistence;
 namespace Pd.Tasks.Persistence.Migrations
 {
     [DbContext(typeof(LocalDbContext))]
-    [Migration("20260503174719_SeedTestUser")]
-    partial class SeedTestUser
+    [Migration("20260505151326_SeedingData")]
+    partial class SeedingData
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

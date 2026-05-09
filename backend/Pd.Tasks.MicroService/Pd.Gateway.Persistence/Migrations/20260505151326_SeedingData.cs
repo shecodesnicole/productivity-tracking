@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Pd.Tasks.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class initialCreate : Migration
+    public partial class SeedingData : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -20,8 +20,8 @@ namespace Pd.Tasks.Persistence.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Title = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false),
+                    Title = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     DueDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -32,6 +32,23 @@ namespace Pd.Tasks.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Tasks", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "User",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    Email = table.Column<string>(type: "text", nullable: false),
+                    Password = table.Column<string>(type: "text", nullable: false),
+                    UserRole = table.Column<int>(type: "integer", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    PasswordResetToken = table.Column<string>(type: "text", nullable: true),
+                    PasswordResetTokenExpiry = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_User", x => x.Id);
                 });
 
             migrationBuilder.InsertData(
@@ -49,6 +66,11 @@ namespace Pd.Tasks.Persistence.Migrations
                     { 19, null, new DateTime(2026, 4, 4, 12, 0, 0, 0, DateTimeKind.Utc), "Implement dark theme toggle in UI", new DateTime(2026, 4, 11, 12, 0, 0, 0, DateTimeKind.Utc), 0, true, 1, "Add dark mode" },
                     { 20, null, new DateTime(2026, 4, 3, 12, 0, 0, 0, DateTimeKind.Utc), "Improve EF Core query performance", new DateTime(2026, 4, 10, 12, 0, 0, 0, DateTimeKind.Utc), 2, true, 2, "Optimize queries" }
                 });
+
+            migrationBuilder.InsertData(
+                table: "User",
+                columns: new[] { "Id", "Email", "IsActive", "Password", "PasswordResetToken", "PasswordResetTokenExpiry", "UserRole" },
+                values: new object[] { "user-seed-1", "test@prodash.com", true, "cHJvZGFzaGRldnNhbHQxMqHLMDawVBMgIT8x3zJD4CuwfI8v", null, null, 0 });
         }
 
         /// <inheritdoc />
@@ -56,6 +78,9 @@ namespace Pd.Tasks.Persistence.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Tasks");
+
+            migrationBuilder.DropTable(
+                name: "User");
         }
     }
 }

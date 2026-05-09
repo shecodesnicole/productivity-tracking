@@ -18,6 +18,7 @@ namespace Pd.Tasks.Application.Features.TaskManagement.Persistence
         Task<TaskModel?> GetTaskAsync(Expression<Func<TaskModel, bool>> predicate);
         //Task<TaskModel> UpdateTaskByIdAsync(UpdateTaskCommand command, object taskUpdate);
         Task<TaskModel> UpdateTaskAsync(TaskModel task, object taskUpdate);
+        Task<TaskModel> RemoveTaskAsync(RemoveTaskCommand command);
 
         Task<TaskModel> AddTaskAsync(TaskModel task);
         Task SaveAsync();
