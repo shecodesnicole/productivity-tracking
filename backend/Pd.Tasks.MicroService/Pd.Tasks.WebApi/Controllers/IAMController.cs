@@ -1,24 +1,16 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Pd.Tasks.Application.Domain.Persistence;
-using Pd.Tasks.Application.Features.IAM.Models;
-using Microsoft.AspNetCore.Http;
-using Pd.Tasks.Application.Features.TaskManagement.Models;
-using Pd.Tasks.Application.Features.TaskManagement.Requests;
-using Pd.Tasks.Application.Features.TaskManagement.Services;
-using Pd.Tasks.Application.Features.UsersManagement.Models;
-using System.Security.Claims;
-using Pd.Tasks.Application.Features.UsersManagement.Services;
-using Pd.Tasks.Application.Features.UsersManagement.Requests;
-using Pd.Tasks.Application.Features.IAM.Services;
 using Pd.Tasks.Application.Domain.Requests;
+using Pd.Tasks.Application.Features.IAM.Models;
 using Pd.Tasks.Application.Features.IAM.Requests;
-
+using Pd.Tasks.Application.Features.IAM.Services;
+using Pd.Tasks.Application.Features.UsersManagement.Requests;
 
 namespace Pd.Tasks.WebApi.Controllers
 {
     [Authorize]
-    [Route("api/student/[controller]")]
+    [Route("api/tasks/[controller]")]
     [ApiController]
     public class IAMController : BaseController
     {
@@ -29,11 +21,14 @@ namespace Pd.Tasks.WebApi.Controllers
         {
             this.authenticationService = authenticationService;
             this.unitOfWork = unitOfWork;
-            Console.WriteLine($"{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff} [IAMController] CONSTRUCTOR CALLED");
-            Console.Out.Flush();
         }
 
-
+        [AllowAnonymous]
+        [HttpGet("Health")]
+        public IActionResult Health()
+        {
+            return Ok(new { status = "healthy", timestamp = DateTime.UtcNow });
+        }
 
         [AllowAnonymous]
         [HttpPost("Login")]
@@ -48,32 +43,17 @@ namespace Pd.Tasks.WebApi.Controllers
         [HttpPost("Register")]
         public async Task<IActionResult> RegisterUserCommand([FromBody] RegisterUserCommand command)
         {
-            Console.WriteLine($"{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff} [IAMController] Register endpoint HIT - Email: {command.Email}");
-            Console.Out.Flush();
-
             try
             {
-                Console.WriteLine($"{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff} [IAMController] About to call RegisterUserAsync");
-                Console.Out.Flush();
-
                 var result = await authenticationService.RegisterUserAsync(command);
-
-                Console.WriteLine($"{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff} [IAMController] RegisterUserAsync completed, result is null: {result == null}");
-                Console.Out.Flush();
-
                 await unitOfWork.SaveChangesAsync();
 
-                Console.WriteLine($"{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff} [IAMController] SaveChangesAsync completed");
-                Console.Out.Flush();
-
-                // Email verification flow - return success without token
-                if (result == null)
+                if (result?.Data == null && result?.IsSuccessful == true)
                 {
                     return Ok(new RequestResult<AuthenticationTokenModel>
                     {
                         IsSuccessful = true,
                         StatusCode = 200,
-                        ErrorMessage = null,
                         Data = null
                     });
                 }
@@ -86,7 +66,34 @@ namespace Pd.Tasks.WebApi.Controllers
             }
         }
 
+        [AllowAnonymous]
+        [HttpPost("ForgotPassword")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordCommand command)
+        {
+            try
+            {
+                var result = await authenticationService.ForgotPasswordAsync(command);
+                return FromRequestResult(result);
+            }
+            catch (Exception e)
+            {
+                return ToFailureRequest<bool>($"{e}", 500);
+            }
+        }
 
-       
+        [AllowAnonymous]
+        [HttpPost("ResetPassword")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordCommand command)
+        {
+            try
+            {
+                var result = await authenticationService.ResetPasswordAsync(command);
+                return FromRequestResult(result);
+            }
+            catch (Exception e)
+            {
+                return ToFailureRequest<bool>($"{e}", 500);
+            }
+        }
     }
 }

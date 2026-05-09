@@ -53,64 +53,39 @@ namespace Pd.Tasks.Application.Features.UsersManagement.Services
             {
                 IsSuccessful = false,
                 StatusCode = 400,
-                ErrorMessage = "Student already exists",
-                Data = new UserModel() // Return an empty StudentModel instead of null
+                ErrorMessage = "A user with this email already exists.",
+                Data = new UserModel()
             };
         }
 
         public async Task<RequestResult<UserModel>> GetUserProfileAsync(GetUserProfileCommand command, CancellationToken cancellationToken)
         {
-            // Specify which navigation properties to include
-            var includePaths = new[] { "Gender", "Title", "Race", "MaritalStatus" };
-
-            var user = await userRepository.GetUserAsync(s => s.Email == command.Email, includePaths);
-            if (user != null)
-            {
-                return new RequestResult<UserModel>
-                {
-                    IsSuccessful = true,
-                    StatusCode = 200,
-                    Data = user
-                };
-            }
-            return new RequestResult<UserModel>
-            {
-                IsSuccessful = false,
-                StatusCode = 404,
-                ErrorMessage = "User not found",
-                Data = null
-            };
+            var user = await userRepository.GetUserAsync(s => s.Email == command.Email);
+            if (user == null)
+                return RequestResult.NotFound<UserModel>("User not found");
+            user.Password = null;
+            return RequestResult.Success(user);
         }
 
         public async Task<RequestResult<UserModel>> UpdateUserAsync(UpdateUserCommand command, CancellationToken cancellationToken)
         {
             var user = await userRepository.GetUserAsync(u => u.Email == command.Email);
-
             if (user == null)
-            {
-                return new RequestResult<UserModel>
-                {
-                    IsSuccessful = false,
-                    StatusCode = 404,
-                    ErrorMessage = "User not found",
-                    Data = null
-                };
-            }
+                return RequestResult.NotFound<UserModel>("User not found");
 
+            if (!string.IsNullOrEmpty(command.Password))
+                user.Password = HashingService.Hash(command.Password);
+            user.UserRole = command.UserRole;
 
-            await userRepository.UpdateUserAsync(user, command);
-
-            return new RequestResult<UserModel>
-            {
-                IsSuccessful = true,
-                StatusCode = 200,
-                Data = user
-            };
-
+            await userRepository.UpdateUserAsync(user, user);
+            user.Password = null;
+            return RequestResult.Success(user);
         }
+
         public async Task<RequestResult<UserModel[]>> GetAllUsersAsync(CancellationToken cancellationToken)
         {
             var result = await userRepository.GetAllUsersAsync();
+            foreach (var u in result) u.Password = null;
             return RequestResult.Success(result);
         }
     }

@@ -74,6 +74,11 @@ namespace Pd.Tasks.Persistence.Accessors
             return task;
         }
 
+        public async Task SaveAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<bool> DeleteTaskAsync(int id, CancellationToken cancellationToken)
         {
             IQueryable<TaskModel> query = _context.Tasks.Where(t => t.Id == id);

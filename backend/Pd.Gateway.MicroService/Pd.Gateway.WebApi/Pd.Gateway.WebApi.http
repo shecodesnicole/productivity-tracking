@@ -1,6 +1,242 @@
-@Pd.Gateway.WebApi_HostAddress = http://localhost:5157
+@host = http://localhost:5157
+@contentType = application/json
 
-GET {{Pd.Gateway.WebApi_HostAddress}}/weatherforecast/
-Accept: application/json
+# ==============================================================
+# HEALTH CHECK
+# Gateway proxies to Tasks service (http://localhost:5041)
+# Start both services before running these tests.
+# ==============================================================
+
+### Gateway health check
+GET {{host}}/api/gateway/IAM/Health
+Accept: {{contentType}}
+
+###
+
+# ==============================================================
+# IAM — REGISTER (via gateway → tasks service)
+# ==============================================================
+
+### Register a new member
+POST {{host}}/api/gateway/IAM/Register
+Content-Type: {{contentType}}
+
+{
+  "email": "nicole@prodash.dev",
+  "password": "Secret123!",
+  "userRole": 1
+}
+
+###
+
+### Register an admin
+POST {{host}}/api/gateway/IAM/Register
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@prodash.dev",
+  "password": "Admin123!",
+  "userRole": 0
+}
+
+###
+
+### Register duplicate — should fail with 400 from upstream
+POST {{host}}/api/gateway/IAM/Register
+Content-Type: {{contentType}}
+
+{
+  "email": "nicole@prodash.dev",
+  "password": "Secret123!",
+  "userRole": 1
+}
+
+###
+
+# ==============================================================
+# IAM — LOGIN (via gateway)
+# Copy the accessToken from the response and set @token below
+# ==============================================================
+
+### Login as member
+POST {{host}}/api/gateway/IAM/Login
+Content-Type: {{contentType}}
+
+{
+  "email": "nicole@prodash.dev",
+  "password": "Secret123!"
+}
+
+###
+
+### Login as admin
+POST {{host}}/api/gateway/IAM/Login
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@prodash.dev",
+  "password": "Admin123!"
+}
+
+###
+
+### Login with wrong password — should fail
+POST {{host}}/api/gateway/IAM/Login
+Content-Type: {{contentType}}
+
+{
+  "email": "nicole@prodash.dev",
+  "password": "WrongPassword"
+}
+
+###
+
+# ==============================================================
+# Set your token here after logging in above
+# ==============================================================
+@token = PASTE_ACCESS_TOKEN_HERE
+
+# ==============================================================
+# IAM — FORGOT / RESET PASSWORD (via gateway)
+# ==============================================================
+
+### Forgot password
+POST {{host}}/api/gateway/IAM/ForgotPassword
+Content-Type: {{contentType}}
+
+{
+  "email": "nicole@prodash.dev"
+}
+
+###
+
+### Reset password
+POST {{host}}/api/gateway/IAM/ResetPassword
+Content-Type: {{contentType}}
+
+{
+  "email": "nicole@prodash.dev",
+  "token": "PASTE_RESET_TOKEN_HERE",
+  "newPassword": "NewSecret123!"
+}
+
+###
+
+# ==============================================================
+# TASKS — CRUD (via gateway, requires auth)
+# ==============================================================
+
+### Get all tasks
+GET {{host}}/api/gateway/Task
+Authorization: Bearer {{token}}
+Accept: {{contentType}}
+
+###
+
+### Get task by ID
+GET {{host}}/api/gateway/Task/1
+Authorization: Bearer {{token}}
+Accept: {{contentType}}
+
+###
+
+### Create a new task (ToDo)
+POST {{host}}/api/gateway/Task
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "title": "Design new feature via gateway",
+  "description": "Created through the gateway proxy",
+  "dueDate": "2026-05-30T00:00:00Z",
+  "status": 1,
+  "hoursWorked": 0
+}
+
+###
+
+### Create task (InProgress)
+POST {{host}}/api/gateway/Task
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "title": "Implement gateway integration tests",
+  "description": "End-to-end coverage for all gateway routes",
+  "dueDate": "2026-06-01T00:00:00Z",
+  "status": 2,
+  "hoursWorked": 2
+}
+
+###
+
+### Create task without auth — should fail with 401
+POST {{host}}/api/gateway/Task
+Content-Type: {{contentType}}
+
+{
+  "title": "Should not be created",
+  "status": 1
+}
+
+###
+
+### Update task — mark as done
+PUT {{host}}/api/gateway/Task/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "title": "Design new feature via gateway",
+  "description": "Completed and reviewed",
+  "status": 3
+}
+
+###
+
+### Delete task (Admin only — use admin token)
+DELETE {{host}}/api/gateway/Task/1
+Authorization: Bearer {{token}}
+
+###
+
+# ==============================================================
+# USERS — USER MANAGEMENT (via gateway, requires auth)
+# ==============================================================
+
+### Get user profile
+POST {{host}}/api/gateway/User/GetUserProfile
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "email": "nicole@prodash.dev"
+}
+
+###
+
+### Update user
+POST {{host}}/api/gateway/User/UpdateUser
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "email": "nicole@prodash.dev",
+  "password": "NewSecret123!",
+  "userRole": 1
+}
+
+###
+
+### Get all users (Admin only)
+POST {{host}}/api/gateway/User/GetAllUsers
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+###
+
+### Get all users without auth — should fail with 401
+POST {{host}}/api/gateway/User/GetAllUsers
+Content-Type: {{contentType}}
 
 ###

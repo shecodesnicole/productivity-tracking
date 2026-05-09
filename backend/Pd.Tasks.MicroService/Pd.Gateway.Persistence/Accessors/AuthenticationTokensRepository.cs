@@ -15,10 +15,10 @@ namespace Pd.Tasks.Persistence.Accessors
             this.localDbContext = localDbContext;
         }
 
-        public async Task<AuthenticationTokenModel> AddAuthenticationTokenAsync(AuthenticationTokenModel token)
+        public Task<AuthenticationTokenModel> AddAuthenticationTokenAsync(AuthenticationTokenModel token)
         {
-            await localDbContext.AddAsync(token);
-            return token;
+            // JWT tokens are stateless — no DB persistence required
+            return Task.FromResult(token);
         }
     }
 }

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Pd.Tasks.Application.Features.IAM.Services
 {
-    internal static class HashingService
+    public static class HashingService
     {
         public static string Hash(string password)
         {
@@ -28,23 +28,31 @@ namespace Pd.Tasks.Application.Features.IAM.Services
 
         public static bool IsHashOf(string hashedPassord, string password)
         {
-            /* Extract the bytes */
-            byte[] hashBytes = Convert.FromBase64String(hashedPassord);
+            try
+            {
+                /* Extract the bytes */
+                byte[] hashBytes = Convert.FromBase64String(hashedPassord);
 
-            /* Get the salt */
-            byte[] salt = new byte[16];
-            Array.Copy(hashBytes, 0, salt, 0, 16);
+                /* Get the salt */
+                byte[] salt = new byte[16];
+                Array.Copy(hashBytes, 0, salt, 0, 16);
 
-            /* Compute the hash on the password the user entered */
-            var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 10000);
-            byte[] hash = pbkdf2.GetBytes(20);
+                /* Compute the hash on the password the user entered */
+                var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 10000);
+                byte[] hash = pbkdf2.GetBytes(20);
 
-            /* Compare the results */
-            for (int i = 0; i < 20; i++)
-                if (hashBytes[i + 16] != hash[i])
-                    return false;
+                /* Compare the results */
+                for (int i = 0; i < 20; i++)
+                    if (hashBytes[i + 16] != hash[i])
+                        return false;
 
-            return true;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DEBUG] Password verification failed: {ex.Message}");
+                return false;
+            }
         }
     }
 }

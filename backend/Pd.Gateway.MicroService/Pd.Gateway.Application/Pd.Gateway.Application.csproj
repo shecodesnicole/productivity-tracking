@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -7,13 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Domain\Models\" />
-    <Folder Include="Domain\Extensions\" />
-    <Folder Include="Domain\Requests\" />
-    <Folder Include="Domain\Persistence\" />
-    <Folder Include="Domain\Services\" />
-    <Folder Include="Domain\Settings\" />
-    <Folder Include="Features\" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
+
 
 </Project>

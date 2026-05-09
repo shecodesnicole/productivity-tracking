@@ -37,8 +37,8 @@ namespace Pd.Tasks.Persistence.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<DateTime?>("DueDate")
                         .HasColumnType("timestamp with time zone");
@@ -54,7 +54,8 @@ namespace Pd.Tasks.Persistence.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("Id");
 
@@ -161,6 +162,46 @@ namespace Pd.Tasks.Persistence.Migrations
                             IsActive = true,
                             Status = 2,
                             Title = "Optimize queries"
+                        });
+                });
+
+            modelBuilder.Entity("Pd.Tasks.Application.Features.UsersManagement.Models.UserModel", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PasswordResetToken")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("PasswordResetTokenExpiry")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("UserRole")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("User");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "user-seed-1",
+                            Email = "test@prodash.com",
+                            IsActive = true,
+                            Password = "cHJvZGFzaGRldnNhbHQxMqHLMDawVBMgIT8x3zJD4CuwfI8v",
+                            UserRole = 0
                         });
                 });
 #pragma warning restore 612, 618

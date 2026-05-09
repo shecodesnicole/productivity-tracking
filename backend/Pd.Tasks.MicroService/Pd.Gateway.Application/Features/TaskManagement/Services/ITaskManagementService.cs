@@ -9,7 +9,7 @@ namespace Pd.Tasks.Application.Features.TaskManagement.Services
 {
     public interface ITaskManagementService
     {
-        Task<RequestResult<object>> DeleteTaskAsync(int id, CancellationToken cancellationToken);
+        Task<RequestResult<object>> DeleteTaskAsync(DeleteTaskCommand command, CancellationToken cancellationToken);
         Task<RequestResult<TaskModel>> AddTaskAsync(AddTaskCommand taskCommand, CancellationToken cancellationToken);
 
         Task<RequestResult<TaskModel[]>> GetAllTasksAsync(CancellationToken cancellationToken);
